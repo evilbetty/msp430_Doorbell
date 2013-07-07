@@ -64,8 +64,8 @@ int main(void) {
 __interrupt void T1A0_ISR(void)
 {
     // Output sample and wake mcu to get next sample ready
-	TA0CCR1 = sample;
-	LPM0_EXIT;
+    TA0CCR1 = sample;
+    LPM0_EXIT;
 }
 
 #pragma vector = PORT1_VECTOR

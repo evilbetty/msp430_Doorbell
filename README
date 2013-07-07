@@ -1,0 +1,21 @@
+msp430_Doorbell
+---------------
+
+Audio playing doorbell with MSP430 launchpad. 
+
+This project (done on a msp430 launchpad) uses a speaker on PIN 1.2 and the button on PIN 1.3. Filters (or at least a capacitor) are recommended as there is DC offset and high freq pwm on the output, but it is not required if you just attach a small speaker to the LP.
+
+Usage (with your own audio):
+
+First find or create an 8Khz unsigned 8bit raw mono audio file (without headers or they'll become part of your data) that will fit the flash of your MCU (under 2 sec). You can use Audacity (+ google) for this task.
+
+Then we create an unsigned char array named binary_data[] containing the audio data into a .h file. For this you can use the following command if you're using linux (where fool.raw is the binary file and binary_data.h is the output file):
+
+$ (echo "const unsigned char binary_data[] = {"; od -txC fool.raw | sed -e "s/^[0-9]*//" -e s"/ \([0-9a-f][09a-f]\)/0x\1,/g" -e"\$d" | sed -e"\$s/,$/};/") >binary_data.h
+
+When this is done you have a .h file you can include in your program.
+
+
+Enjoy,
+E.B.
+

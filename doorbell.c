@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "binary_data.h"        // Include our audio data
 
-#define MCLK                    8000000
+#define MCLK                    16000000
 #define SAMPLES_PER_SECOND      8000
 #define BUTTON                  BIT3
 #define PIN_SPEAKER             BIT2
@@ -20,8 +20,8 @@ volatile uint8_t sample;
 int main(void) {
     // Disable WDT and run with 8Mhz MCLK
     WDTCTL = WDTPW + WDTHOLD;
-    DCOCTL = CALDCO_8MHZ;
-    BCSCTL1 = CALBC1_8MHZ;
+    DCOCTL = CALDCO_16MHZ;
+    BCSCTL1 = CALBC1_16MHZ;
 
     // PIN2 as timer output
     P1SEL |= PIN_SPEAKER;
@@ -41,6 +41,7 @@ int main(void) {
     TA0CTL = TASSEL_2 | MC_1;
     TA0CCR0 = 255;
     TA0CCTL1 |= OUTMOD_7;
+    TA0CCR1 = 0;    // Added for 0 output after reset
 
     // Timer 1 to interrupt at sample speed
     TA1CTL = TASSEL_2 | MC_1;
@@ -62,6 +63,9 @@ int main(void) {
             // If done playing go to LPM4 so that only
             // the button wakes MCU up.
             sample = 0;
+            TA0CCR1 = 0;         // Added for guaranteed 0 output.
+            __delay_cycles(500); // Needed to not have random pin output
+            // We really dont want Vcc going through speaker when idle
             LPM4;
         }
     }

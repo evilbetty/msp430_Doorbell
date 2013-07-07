@@ -13,7 +13,7 @@ const unsigned long binary_data_size = sizeof( binary_data ) / sizeof( binary_da
 int counter = 1024;    // Counter for data location
 int playnow = 0;    // Bool for activating audio
 
-unsigned char sample;
+volatile unsigned char sample;
 
 
 int main(void) {
@@ -55,7 +55,7 @@ int main(void) {
             if ( counter <= binary_data_size ) sample = binary_data[counter++];
             else playnow = 0;
         }
-        // else sample = 0;  // If i put this line audio never runs even when playnow = 1  ?!?
+        else sample = 0;  // If i put this line audio never runs even when playnow = 1  ?!?
         LPM0;
     }
 }

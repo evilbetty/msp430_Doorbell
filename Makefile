@@ -1,5 +1,5 @@
 # Project name
-NAME            = sound
+NAME            = doorbell
 # MSP430 MCU to compile for
 CPU             = msp430g2553
 # Optimisation level

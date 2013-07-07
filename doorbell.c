@@ -1,29 +1,30 @@
-
 #include "msp430.h"
-#include "binary_data.h"
+#include "binary_data.h"        // Include our audio data
 
 #define MCLK                    8000000
 #define SAMPLES_PER_SECOND      8000
 #define BUTTON                  BIT3
 #define PIN_SPEAKER             BIT2
 
-
-unsigned char sample;
+// Get the size of our data array
 const unsigned long binary_data_size = sizeof( binary_data ) / sizeof( binary_data[0] );
 
 // Placed outside main for control with interrupts
-int counter = 0;    // Counter for data location
+int counter = 1024;    // Counter for data location
 int playnow = 0;    // Bool for activating audio
+
+unsigned char sample;
+
 
 int main(void) {
     // Disable WDT and run with 8Mhz MCLK
-	WDTCTL = WDTPW + WDTHOLD;
-	DCOCTL = CALDCO_8MHZ;
-	BCSCTL1 = CALBC1_8MHZ;
+    WDTCTL = WDTPW + WDTHOLD;
+    DCOCTL = CALDCO_8MHZ;
+    BCSCTL1 = CALBC1_8MHZ;
 
     // PIN2 as timer output
-	P1SEL |= PIN_SPEAKER;
-	P1DIR |= PIN_SPEAKER;
+    P1SEL |= PIN_SPEAKER;
+    P1DIR |= PIN_SPEAKER;
 
     // Button as input, output high for pullup, and pullup on
     P1DIR &= ~BUTTON;
@@ -36,37 +37,27 @@ int main(void) {
     P1IFG &= ~BUTTON;
 
     //  Timer 0 for output PWM (for 8bit values)
-	TA0CTL = TASSEL_2 | MC_1;
-	TA0CCR0 = (256) - 1;
-	TA0CCTL1 |= OUTMOD_7;
+    TA0CTL = TASSEL_2 | MC_1;
+    TA0CCR0 = (256) - 1;
+    TA0CCTL1 |= OUTMOD_7;
 
     // Timer 1 to interrupt at sample speed
-	TA1CTL = TASSEL_2 | MC_1;
-	TA1CCR0 = MCLK / SAMPLES_PER_SECOND - 1;
-	TA1CCTL0 |= CCIE;
+    TA1CTL = TASSEL_2 | MC_1;
+    TA1CCR0 = MCLK / SAMPLES_PER_SECOND - 1;
+    TA1CCTL0 |= CCIE;
 
-
-
-	_BIS_SR(GIE);       // Enable global interrupts
+    _BIS_SR(GIE);       // Enable global interrupts
 
 	while(1){
         
         if (playnow == 1)
         {
-            if ( counter <= binary_data_size )
-            {
-                sample = binary_data[counter++];
-            }
-            else
-            {
-                counter = 1024;
-                playnow = 0;
-            }
+            if ( counter <= binary_data_size ) sample = binary_data[counter++];
+            else playnow = 0;
         }
         // else sample = 0;  // If i put this line audio never runs even when playnow = 1  ?!?
-
-		LPM0;
-	}
+        LPM0;
+    }
 }
 
 #pragma vector = TIMER1_A0_VECTOR
